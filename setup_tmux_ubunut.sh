@@ -4,7 +4,7 @@ echo "Starting automatic tmux environment setup (Ubuntu specific)..."
 
 # 1. Update package repositories and install tmux and xclip
 echo "Updating system package repositories and installing packages..."
-sudo apt-get update -qq
+sudo apt-get update
 sudo apt-get install -y tmux xclip
 
 # 2. Download the specified Gist content via wget and overwrite to ~/.tmux.conf
