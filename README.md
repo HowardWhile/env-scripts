@@ -14,6 +14,6 @@ wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/d
 此腳本將安裝必要的 wmctrl 套件，並建立一個 "顯示桌面" 的桌面啟動器，讓您可以快速顯示桌面。
 
 ```bash
-./install_show_desktop.sh
+wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/install_show_desktop.sh | bash
 ```
 
