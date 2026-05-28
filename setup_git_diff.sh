@@ -2,7 +2,7 @@
 
 # =================================================================
 # Description: Setup _diff function with clipboard support for Ubuntu
-# Target OS: Ubuntu 22.04 (Jammy Jellyfish)
+# Target OS: Ubuntu 22.04 and later (should be compatible with older versions too)
 # =================================================================
 
 # 1. Environment Check (Ubuntu 22.04 friendly notice)
@@ -33,18 +33,21 @@ if grep -q "GIT DIFF CLIPBOARD FUNCTION" "$BASHRC" || grep -q "alias _diff=" "$B
     fi
     
     echo " [*] Removing old configuration safely..."
-    # 安全移除舊版的所有可能形式
+    # Safe removal of any previous versions
     sed -i '/# === GIT DIFF CLIPBOARD FUNCTION ===/,/# === END GIT DIFF CLIPBOARD FUNCTION ===/d' "$BASHRC"
     sed -i '/alias _diff=/d' "$BASHRC"
     sed -i '/_diff()/d' "$BASHRC"
     sed -i '/xclip -selection clipboard/d' "$BASHRC"
 fi
 
-# 5. Write and apply changes using Here-Doc (Prevents escape character corruption)
+# 5. Write and apply changes (Safely handle newlines)
 echo " [*] Writing configuration to $BASHRC..."
 
-cat << 'EOF' >> "$BASHRC"
+# 先移除檔案末尾所有的空白行（避免重複執行導致空白行堆疊）
+sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$BASHRC"
 
+# 直接寫入，不額外使用 echo ""
+cat << 'EOF' >> "$BASHRC"
 # === GIT DIFF CLIPBOARD FUNCTION ===
 _diff() {
     # 1. Intent-to-add: includes untracked files in the diff
@@ -59,5 +62,23 @@ _diff() {
 # === END GIT DIFF CLIPBOARD FUNCTION ===
 EOF
 
-echo " [✔] Success! Command '$ALIAS_NAME' has been added to $BASHRC."
-echo " [i] Please run: [ source ~/.bashrc ] to apply changes immediately."
+# Success and Usage Instructions
+echo -e "\n\033[0;32m [✔] Success! Command '$ALIAS_NAME' has been added to $BASHRC.\033[0m"
+echo -e " [i] Please run: \033[0;33msource ~/.bashrc\033[0m to apply changes immediately.\n"
+
+echo "========================================================"
+echo "                   USAGE GUIDE                          "
+echo "========================================================"
+echo " Simply type the shortcut in your repository:"
+echo -e "   \033[1;36m_diff\033[0m"
+echo ""
+echo " Features:"
+echo "   1. Auto-Tracks: Runs 'git add -N .' first, so newly created"
+echo "      (untracked) files will also show up in the diff."
+echo "   2. Split-Output: Your terminal will display the standard"
+echo "      colorful diff (red/green) for easy review."
+echo "   3. Auto-Copy: The clean, plain-text version (without messy"
+echo "      ANSI color codes) is automatically copied to your clipboard."
+echo "   4. Ready to Paste: You can directly Ctrl+V / Cmd+V into"
+echo "      Slack, Discord, or GitHub issues without garbage text."
+echo "========================================================"
