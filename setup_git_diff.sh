@@ -27,8 +27,7 @@ ALIAS_NAME="_diff"
 if grep -q "GIT DIFF CLIPBOARD FUNCTION" "$BASHRC" || grep -q "alias _diff=" "$BASHRC" || grep -q "_diff()" "$BASHRC"; then
     echo " [?] '$ALIAS_NAME' configuration already exists in $BASHRC."
     
-    # 關鍵修正：加上 < /dev/tty 確保在 wget | bash 模式下仍能接收輸入
-    read -p " Do you want to overwrite the existing configuration? (y/N): " confirm < /dev/tty
+    read -p " Do you want to overwrite the existing configuration? (y/N): " confirm < /dev/tty || confirm="n"
     
     if [[ $confirm != [yY] ]]; then
         echo " [x] Operation canceled."
