@@ -14,6 +14,8 @@
 wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/setup_git_diff.sh | bash
 ```
 
+![image-20260613004325597](./pic/README/image-20260613004325597.png)
+
 ## **setup_tmux_ubuntu.sh**
 
 此腳本將更新套件庫、安裝 tmux 和 xclip、下載指定 Gist 中的 tmux 配置，並在 tmux 運行時重新載入配置。
