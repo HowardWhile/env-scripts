@@ -32,7 +32,6 @@ install_apt_packages() {
     local missing_packages=()
 
     command -v git > /dev/null || missing_packages+=("git")
-    command -v pip3 > /dev/null || missing_packages+=("python3-pip")
 
     if [ ${#missing_packages[@]} -eq 0 ]; then
         echo " [*] Required apt packages are already installed."
@@ -63,27 +62,66 @@ clone_or_update_rtw() {
     git clone "$REPO_URL" "$INSTALL_DIR"
 }
 
-install_rtw_cli() {
-    echo " [*] Installing RTW CLI Python packages..."
-
-    local pip_args=("--user" "-r" "requirements.txt")
-
-    if pip3 install --help 2>/dev/null | grep -q -- "--break-system-packages"; then
-        pip_args+=("--break-system-packages")
-    fi
-
-    (
-        cd "$INSTALL_DIR/rtwcli"
-        pip3 install "${pip_args[@]}"
-    )
-}
-
 source_rtw_setup() {
     echo " [*] Sourcing RTW setup.bash for this installation run..."
 
     # Official step:
     #   source ros_team_workspace/setup.bash
     source "$INSTALL_DIR/setup.bash"
+}
+
+configure_ros_domain_id() {
+    local domain_id="${ROS_DOMAIN_ID:-0}"
+
+    if [[ ! "$domain_id" =~ ^[0-9]+$ ]]; then
+        echo " [!] Current ROS_DOMAIN_ID='$domain_id' is not a number. Keeping ROS_DOMAIN_ID=0 in $RTW_RC."
+        domain_id="0"
+    elif [ -n "${ROS_DOMAIN_ID+x}" ]; then
+        echo " [*] Using current ROS_DOMAIN_ID=$domain_id for $RTW_RC."
+    else
+        echo " [*] No ROS_DOMAIN_ID detected. Keeping ROS_DOMAIN_ID=0 in $RTW_RC."
+    fi
+
+    sed -i "s|^export ROS_DOMAIN_ID=.*|export ROS_DOMAIN_ID=$domain_id # Set your Domain ID if you are in a network with multiple computers|g" "$RTW_RC"
+
+    if ! grep -q "^export ROS_DOMAIN_ID=" "$RTW_RC"; then
+        cat << EOF >> "$RTW_RC"
+
+export ROS_DOMAIN_ID=$domain_id # Set your Domain ID if you are in a network with multiple computers
+EOF
+    fi
+
+    echo ""
+    echo -e "\033[1;33m [!] ROS_DOMAIN_ID is set to $domain_id in $RTW_RC.\033[0m"
+    echo -e "\033[1;33m [!] If this machine needs another ROS 2 domain later, edit this line in $RTW_RC:\033[0m"
+    echo -e "\033[1;36m     export ROS_DOMAIN_ID=$domain_id\033[0m"
+    echo ""
+}
+
+configure_terminal_coloring() {
+    local coloring_line
+    coloring_line="source $INSTALL_DIR/scripts/configuration/terminal_coloring.bash"
+
+    echo ""
+    read -p " [?] Enable RTW terminal coloring? This changes your shell prompt colors. (y/N): " enable_coloring < /dev/tty || enable_coloring="n"
+
+    if [[ "$enable_coloring" == [yY] ]]; then
+        sed -i "s|^#*[[:space:]]*source .*/ros_team_workspace/scripts/configuration/terminal_coloring.bash|$coloring_line|g" "$RTW_RC"
+
+        if ! grep -q "^$coloring_line$" "$RTW_RC"; then
+            cat << EOF >> "$RTW_RC"
+
+$coloring_line
+EOF
+        fi
+
+        echo " [*] RTW terminal coloring enabled in $RTW_RC."
+    else
+        sed -i "s|^#*[[:space:]]*source .*/ros_team_workspace/scripts/configuration/terminal_coloring.bash|#$coloring_line|g" "$RTW_RC"
+        echo " [*] RTW terminal coloring kept disabled. You can enable it later in $RTW_RC."
+    fi
+
+    echo ""
 }
 
 configure_rtw_rc() {
@@ -103,6 +141,7 @@ configure_rtw_rc() {
     sed -i "s|source <Path to ros_team_workspace>/scripts/configuration/terminal_coloring.bash|source $INSTALL_DIR/scripts/configuration/terminal_coloring.bash|g" "$RTW_RC"
     sed -i "s|source .*/ros_team_workspace/scripts/configuration/terminal_coloring.bash|source $INSTALL_DIR/scripts/configuration/terminal_coloring.bash|g" "$RTW_RC"
     sed -i "s|source .*/ros_team_workspace/scripts/environment/setup.bash|source $INSTALL_DIR/scripts/environment/setup.bash|g" "$RTW_RC"
+    sed -i 's|^export ROS_STATIC_PEERS=|#export ROS_STATIC_PEERS=|g' "$RTW_RC"
 
     if ! grep -q "source $INSTALL_DIR/setup.bash" "$RTW_RC"; then
         {
@@ -111,6 +150,9 @@ configure_rtw_rc() {
             echo "source $INSTALL_DIR/setup.bash"
         } >> "$RTW_RC"
     fi
+
+    configure_ros_domain_id
+    configure_terminal_coloring
 }
 
 configure_bashrc() {
@@ -140,7 +182,6 @@ EOF
 
 install_apt_packages
 clone_or_update_rtw
-install_rtw_cli
 source_rtw_setup
 configure_rtw_rc
 configure_bashrc
@@ -150,9 +191,14 @@ echo -e "\033[0;32m [✔] RTW installation completed.\033[0m"
 echo ""
 echo "Important:"
 echo "  Keep this folder: $INSTALL_DIR"
-echo "  RTW CLI was installed in editable mode and your shell setup sources files from that folder."
+echo "  Your shell setup sources files from that folder."
+echo "  ROS_DOMAIN_ID is configured in: $RTW_RC"
 echo ""
 echo "Next steps:"
 echo "  1. Run: source ~/.bashrc"
-echo "  2. Check: rtw --help"
+echo "  2. Create a ROS workspace, for example:"
+echo "       setup-ros-workspace ~/workspaces/ros/my_ros_ws jazzy"
+echo "  3. Open a new terminal and source the workspace alias:"
+echo "       _my_ros_ws"
+echo "  4. Use RTW shell aliases such as: rosd, rosds, rosdi, rosdb, cb, ca, crm"
 echo "========================================================"

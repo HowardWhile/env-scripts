@@ -1,6 +1,52 @@
 # env-scripts
 我的環境腳本
 
+## **install_ros_team_workspace.sh**
+
+此腳本會將 [b-robotized/ros_team_workspace](https://github.com/b-robotized/ros_team_workspace) 安裝到 `~/workspaces/ros_team_workspace`，並設定 `~/.ros_team_ws_rc` 與 `.bashrc` 自動載入 RTW shell 工具。
+
+> 安裝完成後請保留 `~/workspaces/ros_team_workspace`。shell 設定會 source 此資料夾內的檔案。
+> 若安裝時環境中已設定 `ROS_DOMAIN_ID`，腳本會同步寫入 `~/.ros_team_ws_rc`；之後也可以直接到該檔案修改 `ROS_DOMAIN_ID`。
+> 腳本會註解掉預設的 `ROS_STATIC_PEERS` 固定 IP 設定，避免套用不符合當前網路的 peer。
+> 安裝過程會詢問是否啟用 RTW terminal coloring；預設不啟用，可之後到 `~/.ros_team_ws_rc` 調整。
+
+```bash
+wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/install_ros_team_workspace.sh | bash
+```
+
+安裝後可使用 RTW shell workflow：
+
+```bash
+source ~/.bashrc
+setup-ros-workspace ~/workspaces/ros/ws_ros jazzy
+```
+
+重新開啟 terminal 後：
+
+```bash
+_ws_ros
+rosdepi 
+rosd
+cb
+```
+
+常用 RTW alias 對應：
+
+| Alias | 說明 | 對應指令 |
+| --- | --- | --- |
+| `_ws_ros` | 啟用 `ws_ros` workspace | `source ~/workspaces/ros/ws_ros/install/setup.bash` |
+| `rosdepi` | 安裝目前 workspace `src` 內 packages 缺少的 rosdep dependencies | `rosdep install -r -y -i --from-paths "$ROS_WS/src` |
+| `rosd` | 進入目前 workspace 的 `src` 目錄 | `cd "$ROS_WS"` |
+| `cb` | build 目前 workspace | `colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` |
+
+移除 RTW 安裝：
+
+```bash
+wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/uninstall_ros_team_workspace.sh | bash
+```
+
+
+
 ## **setup_git_diff.sh**
 
 此腳本會在您的 `.bashrc` 中建立一個 `_diff` 指令，顯示目前的差異並且自動複製差異文字到剪貼簿。
@@ -48,8 +94,3 @@ wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/d
 ```
 
 ![image-20260515170956510](./pic/README/image-20260515170956510.png)
-
-
-
-
-
