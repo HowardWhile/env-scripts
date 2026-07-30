@@ -1,8 +1,20 @@
+<div align="center">
+
 # env-scripts
 
-一組為 Ubuntu 桌面與 ROS 2 開發環境準備的可執行設定腳本。用一條指令完成重複的系統設定，並保留日後驗證、調整與移除的方式。
+**適用於 Ubuntu 與 ROS 2 開發者的環境設定腳本：快速完成常用設定，也保留清楚的驗證與移除方式。**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+
+</div>
 
 > 適用於 Ubuntu。多數腳本會安裝系統套件、下載設定，或修改你的 `~/.bashrc`、`~/.tmux.conf` 與桌面設定；執行前請先閱讀對應腳本內容，並確認你信任來源。
+
+## 為什麼使用它？
+
+- **少做重複設定**：以單一腳本完成 RTW、tmux、Git diff 與 GNOME Dock 常用配置。
+- **了解會改什麼**：每個流程說明安裝的套件、修改的位置與可能覆寫的設定檔。
+- **能回復設定**：RTW 提供互動式移除腳本；會修改現有檔案的流程會在章節中明確標示。
 
 ## 選擇你要完成的事
 
@@ -139,6 +151,15 @@ wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/d
 
 ![GNOME Dock 上的 Show Desktop 啟動器](./pic/README/image-20260515170956510.png)
 
-## 需要協助？
+## 貢獻與回報問題
 
-若腳本未如預期執行，請提供 Ubuntu 版本、使用的腳本名稱與完整錯誤輸出，並在 [Issues](https://github.com/HowardWhile/env-scripts/issues) 回報。
+歡迎以 Issue 回報問題或提出改善建議。回報時請附上 Ubuntu 版本、使用的腳本名稱與完整錯誤輸出；提交 Pull Request 前，請先執行：
+
+```bash
+bash -n *.sh
+git diff --check
+```
+
+## 授權
+
+本專案以 [MIT License](./LICENSE) 授權。
