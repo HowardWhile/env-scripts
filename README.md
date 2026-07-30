@@ -1,96 +1,144 @@
 # env-scripts
-我的環境腳本
 
-## **install_ros_team_workspace.sh**
+一組為 Ubuntu 桌面與 ROS 2 開發環境準備的可執行設定腳本。用一條指令完成重複的系統設定，並保留日後驗證、調整與移除的方式。
 
-此腳本會將 [b-robotized/ros_team_workspace](https://github.com/b-robotized/ros_team_workspace) 安裝到 `~/workspaces/ros_team_workspace`，並設定 `~/.ros_team_ws_rc` 與 `.bashrc` 自動載入 RTW shell 工具。
+> 適用於 Ubuntu。多數腳本會安裝系統套件、下載設定，或修改你的 `~/.bashrc`、`~/.tmux.conf` 與桌面設定；執行前請先閱讀對應腳本內容，並確認你信任來源。
 
-> 安裝完成後請保留 `~/workspaces/ros_team_workspace`。shell 設定會 source 此資料夾內的檔案。
-> 若安裝時環境中已設定 `ROS_DOMAIN_ID`，腳本會同步寫入 `~/.ros_team_ws_rc`；之後也可以直接到該檔案修改 `ROS_DOMAIN_ID`。
-> 腳本會註解掉預設的 `ROS_STATIC_PEERS` 固定 IP 設定，避免套用不符合當前網路的 peer。
-> 安裝過程會詢問是否啟用 RTW terminal coloring；預設不啟用，可之後到 `~/.ros_team_ws_rc` 調整。
+## 選擇你要完成的事
+
+| 目標 | 使用腳本 | 完成後得到什麼 |
+| --- | --- | --- |
+| 建立 ROS 2 團隊工作環境 | [安裝 RosTeamWorkspace](#安裝-rosteamworkspace-rtw) | RTW shell workflow 與 ROS workspace 指令 |
+| 快速分享 Git 變更 | [設定 `_diff`](#設定-git-diff-剪貼簿快捷鍵) | 彩色 diff 顯示與純文字剪貼簿內容 |
+| 建立 tmux 開發環境 | [設定 tmux](#設定-tmux) | 常用 pane/window 快捷鍵與滑鼠支援 |
+| 在 GNOME Dock 放上顯示桌面按鈕 | [安裝顯示桌面啟動器](#安裝顯示桌面啟動器) | 一鍵切換顯示桌面 |
+
+## 快速開始
+
+執行前請確認：
+
+- 使用 Ubuntu，且可執行 `sudo`。
+- 已連上網路；腳本可能透過 `apt`、GitHub 或 Gist 下載內容。
+- 關閉或備份正在編輯的 shell / tmux 設定檔。
+
+建議先 clone 專案、檢查腳本後再執行：
+
+```bash
+git clone https://github.com/HowardWhile/env-scripts.git
+cd env-scripts
+sed -n '1,240p' install_ros_team_workspace.sh
+bash install_ros_team_workspace.sh
+```
+
+若你偏好單行安裝指令，各章節也提供 `wget | bash` 版本；它會直接執行遠端內容，請只在確認來源與 branch 後使用。
+
+## 安裝 RosTeamWorkspace (RTW)
+
+為 ROS 2 團隊專案建立一致的 shell workflow。腳本會將 [b-robotized/ros_team_workspace](https://github.com/b-robotized/ros_team_workspace) 安裝到 `~/workspaces/ros_team_workspace`，並設定 `~/.ros_team_ws_rc` 與 `~/.bashrc` 自動載入 RTW 工具。
+
+### 前置條件
+
+- Ubuntu 24.04 以上為主要支援目標；較舊版本會盡力運作。
+- 可使用 `sudo` 安裝缺少的 `git` 套件。
+- 安裝時會詢問是否啟用 RTW terminal coloring，預設為不啟用。
+
+### 安裝
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/install_ros_team_workspace.sh | bash
 ```
 
-安裝後可使用 RTW shell workflow：
+### 驗證：建立並啟用第一個 workspace
 
 ```bash
 source ~/.bashrc
 setup-ros-workspace ~/workspaces/ros/ws_ros jazzy
 ```
 
-重新開啟 terminal 後：
+重新開啟 terminal 後，啟用 workspace 並使用常見指令：
 
 ```bash
 _ws_ros
-rosdepi 
+rosdepi
 rosd
 cb
 ```
 
-常用 RTW alias 對應：
+### 安裝結果與設定
 
-| Alias | 說明 | 對應指令 |
+- 請保留 `~/workspaces/ros_team_workspace`；shell 設定會 source 其中的檔案。
+- 腳本會將目前的 `ROS_DOMAIN_ID` 寫入 `~/.ros_team_ws_rc`；若未設定則使用 `0`。日後可直接修改該檔案。
+- 預設 `ROS_STATIC_PEERS` 會被註解，避免固定 IP 設定不符合目前網路。
+- 若 `~/.ros_team_ws_rc` 已存在，腳本會先建立帶時間戳記的備份。
+
+| 指令 | 用途 | 對應動作 |
 | --- | --- | --- |
 | `_ws_ros` | 啟用 `ws_ros` workspace | `source ~/workspaces/ros/ws_ros/install/setup.bash` |
-| `rosdepi` | 安裝目前 workspace `src` 內 packages 缺少的 rosdep dependencies | `rosdep install -r -y -i --from-paths "$ROS_WS/src` |
+| `rosdepi` | 安裝 workspace `src` 內缺少的 rosdep 相依套件 | `rosdep install -r -y -i --from-paths "$ROS_WS/src"` |
 | `rosd` | 進入目前 workspace 的 `src` 目錄 | `cd "$ROS_WS"` |
-| `cb` | build 目前 workspace | `colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` |
+| `cb` | 建置目前 workspace | `colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON` |
 
-移除 RTW 安裝：
+### 移除 RTW
+
+移除流程會詢問是否刪除 RTW 設定、Python 套件、clone 與 CLI 設定，並先備份檔案。它不會移除你在其他位置建立的 ROS workspaces。
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/uninstall_ros_team_workspace.sh | bash
 ```
 
+## 設定 Git diff 剪貼簿快捷鍵
 
+建立 `_diff` shell function，讓你在 Git repository 內一次完成以下工作：
 
-## **setup_git_diff.sh**
+- 將包含未追蹤檔案的差異顯示在 terminal。
+- 將不含 ANSI 色碼的純文字 diff 複製到剪貼簿，方便貼到 Slack、Discord 或 GitHub Issue。
 
-此腳本會在您的 `.bashrc` 中建立一個 `_diff` 指令，顯示目前的差異並且自動複製差異文字到剪貼簿。
-
-**主要功能：**
-- **全面比較**：執行指令時會先執行 `git add -N .`，讓未追蹤的檔案也會出現在 diff 差異中。
-- **顯示清晰**：終端機畫面上保持標準的紅綠顏色標記方便檢視，同時自動將「去色純文字版」存入剪貼簿。
-- **方便貼上**：適合將差異片段直接貼上至 Slack、Discord 或 GitHub Issues，內容乾淨且不會包含亂碼顏色代碼。
+腳本會在缺少時安裝 `xclip`，並寫入 `~/.bashrc`。若已偵測到 `_diff` 設定，會先詢問是否覆寫。
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/setup_git_diff.sh | bash
+source ~/.bashrc
 ```
 
-![image-20260613004325597](./pic/README/image-20260613004325597.png)
+在任一 Git repository 中執行：
 
-## **setup_tmux_ubuntu.sh**
+```bash
+_diff
+```
 
-此腳本將更新套件庫、安裝 tmux 和 xclip、下載指定 Gist 中的 tmux 配置，並在 tmux 運行時重新載入配置。
+![執行 _diff 後的 terminal 畫面](./pic/README/image-20260613004325597.png)
 
-此 `.tmux.conf` 配置提供：
-- 啟用滑鼠模式
-- 啟用反白複製文字
-- 使用 <kbd>Alt</kbd>+<kbd>方向鍵</kbd>切換 pane
-- 使用 <kbd>Shift</kbd>+<kbd>方向鍵</kbd>切換 window
-- 將 prefix 從 <kbd>Ctrl</kbd> + <kbd>b</kbd>` 改為 `<kbd>Ctrl</kbd> + <kbd>a</kbd>
-- 垂直切割視窗快捷鍵 <kbd>Ctrl</kbd> + <kbd>a</kbd> + <kbd>|</kbd>
-- 水平切割視窗快捷鍵 <kbd>Ctrl</kbd> + <kbd>a</kbd> + <kbd>-</kbd>
+## 設定 tmux
+
+安裝 `tmux` 與 `xclip`，並從指定 Gist 下載設定到 `~/.tmux.conf`。若 tmux 已在執行，設定會自動重新載入。
+
+> 此腳本會覆寫既有 `~/.tmux.conf`。若你有自訂設定，請先備份。
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/setup_tmux_ubuntu.sh | bash
 ```
 
-![image-20260515171258378](./pic/README/image-20260515171258378.png)
+完成後，設定提供：
 
+- 滑鼠模式與反白複製。
+- <kbd>Alt</kbd> + 方向鍵切換 pane，<kbd>Shift</kbd> + 方向鍵切換 window。
+- prefix 改為 <kbd>Ctrl</kbd> + <kbd>a</kbd>。
+- <kbd>Ctrl</kbd> + <kbd>a</kbd>，再按 <kbd>|</kbd> 垂直切割；再按 <kbd>-</kbd> 水平切割。
 
+![tmux 設定完成後的畫面](./pic/README/image-20260515171258378.png)
 
+## 安裝顯示桌面啟動器
 
+在 GNOME 桌面安裝並釘選「Show Desktop」啟動器；點擊後可在顯示桌面與還原視窗間切換。
 
-## **install_show_desktop.sh**
-
-此腳本將安裝必要的 wmctrl 套件，並建立一個 "顯示桌面" 的桌面啟動器，讓您可以快速顯示桌面。
+腳本會在缺少時安裝 `wmctrl`，建立 `~/.local/share/applications/show-desktop.desktop`，並更新 GNOME Dock 的我的最愛清單。
 
 ```bash
 wget -qO- https://raw.githubusercontent.com/HowardWhile/env-scripts/refs/heads/develop/install_show_desktop.sh | bash
 ```
 
-![image-20260515170956510](./pic/README/image-20260515170956510.png)
+![GNOME Dock 上的 Show Desktop 啟動器](./pic/README/image-20260515170956510.png)
+
+## 需要協助？
+
+若腳本未如預期執行，請提供 Ubuntu 版本、使用的腳本名稱與完整錯誤輸出，並在 [Issues](https://github.com/HowardWhile/env-scripts/issues) 回報。
