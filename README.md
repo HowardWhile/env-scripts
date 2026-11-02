@@ -46,7 +46,7 @@ bash install_ros_team_workspace.sh
 
 ## 安裝 RosTeamWorkspace (RTW)
 
-為 ROS 2 團隊專案建立一致的 shell workflow。腳本會將 [b-robotized/ros_team_workspace](https://github.com/b-robotized/ros_team_workspace) 安裝到 `~/workspaces/ros_team_workspace`，並設定 `~/.ros_team_ws_rc` 與 `~/.bashrc` 自動載入 RTW 工具。
+為 ROS 2 團隊專案建立一致的 shell workflow。腳本會將 [b-robotized/ros_team_workspace](https://github.com/b-robotized/ros_team_workspace) 安裝到 `~/apps/ros_team_workspace`，並設定 `~/.ros_team_ws_rc` 與 `~/.bashrc` 自動載入 RTW 工具。
 
 ### 前置條件
 
@@ -78,7 +78,7 @@ cb
 
 ### 安裝結果與設定
 
-- 請保留 `~/workspaces/ros_team_workspace`；shell 設定會 source 其中的檔案。
+- 請保留 `~/apps/ros_team_workspace`；shell 設定會 source 其中的檔案。
 - 腳本會將目前的 `ROS_DOMAIN_ID` 寫入 `~/.ros_team_ws_rc`；若未設定則使用 `0`。日後可直接修改該檔案。
 - 預設 `ROS_STATIC_PEERS` 會被註解，避免固定 IP 設定不符合目前網路。
 - 若 `~/.ros_team_ws_rc` 已存在，腳本會先建立帶時間戳記的備份。

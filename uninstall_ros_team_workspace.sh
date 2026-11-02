@@ -6,7 +6,7 @@
 
 set -e
 
-INSTALL_DIR="$HOME/workspaces/ros_team_workspace"
+INSTALL_DIR="$HOME/apps/ros_team_workspace"
 BASHRC="$HOME/.bashrc"
 RTW_RC="$HOME/.ros_team_ws_rc"
 RTW_CONFIG_DIR="$HOME/.ros_team_workspace"

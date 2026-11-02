@@ -1,14 +1,14 @@
 #!/bin/bash
 
 # =================================================================
-# Description: Install RosTeamWorkspace (RTW) into ~/workspaces
+# Description: Install RosTeamWorkspace (RTW) into ~/apps
 # Target OS: Ubuntu 24.04 and later (best effort on older Ubuntu)
 # =================================================================
 
 set -e
 
 REPO_URL="https://github.com/b-robotized/ros_team_workspace.git"
-INSTALL_PARENT="$HOME/workspaces"
+INSTALL_PARENT="$HOME/apps"
 INSTALL_DIR="$INSTALL_PARENT/ros_team_workspace"
 BASHRC="$HOME/.bashrc"
 RTW_RC="$HOME/.ros_team_ws_rc"
