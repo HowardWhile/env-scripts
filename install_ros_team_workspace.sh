@@ -58,8 +58,8 @@ clone_or_update_rtw() {
         exit 1
     fi
 
-    echo " [*] Cloning RTW repository..."
-    git clone "$REPO_URL" "$INSTALL_DIR"
+    echo " [*] Cloning the latest RTW snapshot (shallow, single branch)..."
+    git clone --depth 1 --single-branch "$REPO_URL" "$INSTALL_DIR"
 }
 
 source_rtw_setup() {
